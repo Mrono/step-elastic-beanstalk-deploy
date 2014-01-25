@@ -60,7 +60,7 @@ ApplicationName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_APP_NAME
 DevToolsEndpoint=git.elasticbeanstalk.us-west-2.amazonaws.com
 Region=us-west-2
 ServiceEndpoint=https://elasticbeanstalk.us-west-2.amazonaws.com
-AwsCredentialFile=AWS_CREDENTIAL_FILE
+AwsCredentialFile=$AWS_CREDENTIAL_FILE
 EnvironmentName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME
 [branches]
 $WERCKER_GIT_BRANCH=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME
@@ -75,8 +75,10 @@ then
 fi
 
 cat $WERCKER_SOURCE_DIR/.elasticbeanstalk/config
+cat $AWS_CREDENTIAL_FILE
 
-echo pwd
+pwd
+ls -la
 echo '-----Checking if eb exists and can connect'
 eb status
 if [[ $? -ne "0" ]];

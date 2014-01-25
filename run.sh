@@ -19,6 +19,8 @@ then
     fail 'Missing or empty option AWS_SECRET_KEY, please check wercker.yml'
 fi
 
+sudo apt-get update
+sudo apt-get install unzip
 wget --quiet https://s3.amazonaws.com/elasticbeanstalk/cli/AWS-ElasticBeanstalk-CLI-2.6.0.zip
 unzip -qq AWS-ElasticBeanstalk-CLI-2.6.0.zip
 sudo mkdir -p /usr/local/aws/elasticbeanstalk

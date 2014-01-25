@@ -76,9 +76,6 @@ then
 	fail 'Unable to set up config file.'
 fi
 
-cat $WERCKER_SOURCE_DIR/.elasticbeanstalk/config
-cat $AWS_CREDENTIAL_FILE
-
 echo '-----Checking if eb exists and can connect'
 eb status
 if [[ $? -ne "0" ]];
@@ -87,7 +84,12 @@ then
 fi
 
 sudo bash /usr/local/aws/elasticbeanstalk/AWSDevTools/Linux/AWSDevTools-RepositorySetup.sh
+if [[ $? -ne "0" ]];
+then
+	fail 'Unknown error with EB tools.'
+fi
 
+echo '-----Pushing to AWS eb servers'
 git aws.push
 if [[ $? -ne "0" ]];
 then

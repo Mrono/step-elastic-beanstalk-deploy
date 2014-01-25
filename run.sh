@@ -2,7 +2,6 @@
 set +e
 
 cd $HOME
-echo $WERCKER_ELASTIC_BEANSTALK_DEPLOY_APP_NAME
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_APP_NAME" ]
 then
     fail 'Missing or empty option APP_NAME, please check wercker.yml'

@@ -14,9 +14,9 @@ if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY" ]
 then
     fail 'Missing or empty option KEY, please check wercker.yml'
 fi
-if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET_KEY" ]
+if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET" ]
 then
-    fail 'Missing or empty option SECRET_KEY, please check wercker.yml'
+    fail 'Missing or empty option SECRET, please check wercker.yml'
 fi
 
 echo '-----Updating apt database'
@@ -52,7 +52,7 @@ export AWS_CREDENTIAL_FILE="$WERCKER_SOURCE_DIR/.elasticbeanstalk/aws_credential
 echo '-----Setting up credentials'
 cat <<EOT >> $AWS_CREDENTIAL_FILE
 AWSAccessKeyId=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY
-AWSSecretKey=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET_KEY
+AWSSecretKey=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET
 EOT
 
 echo '-----Setting up config file'

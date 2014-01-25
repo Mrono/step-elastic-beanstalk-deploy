@@ -47,7 +47,7 @@ fi
 echo '-----Change back to the source dir';
 cd $WERCKER_SOURCE_DIR
 
-export AWS_CREDENTIAL_FILE="/home/ubuntu/.elasticbeanstalk/aws_credential_file"
+export AWS_CREDENTIAL_FILE="$WERCKER_SOURCE_DIR/.elasticbeanstalk/aws_credential_file"
 
 echo '-----Setting up credentials'
 echo 'AWSAccessKeyId=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY' > $AWS_CREDENTIAL_FILE
@@ -60,6 +60,7 @@ ApplicationName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_APP_NAME
 DevToolsEndpoint=git.elasticbeanstalk.us-west-2.amazonaws.com
 Region=us-west-2
 ServiceEndpoint=https://elasticbeanstalk.us-west-2.amazonaws.com
+AwsCredentialFile=AWS_CREDENTIAL_FILE
 EnvironmentName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME
 [branches]
 $WERCKER_GIT_BRANCH=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME

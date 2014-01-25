@@ -1,4 +1,4 @@
-name: ebDeploy
+name: elastic-beanstalk-deploy
 version: 0.0.1
 description: Allows you to deploy your application to an already existing amazon Elastic Beanstalk
 keywords:

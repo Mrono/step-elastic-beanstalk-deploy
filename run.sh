@@ -19,22 +19,42 @@ then
     fail 'Missing or empty option SECRET_KEY, please check wercker.yml'
 fi
 
-sudo apt-get update
+echo 'Updating apt database'
+sudo apt-get update -qq
+echo 'Installing unzip'
 sudo apt-get install unzip
+
+echo 'Installing EB'
 wget --quiet https://s3.amazonaws.com/elasticbeanstalk/cli/AWS-ElasticBeanstalk-CLI-2.6.0.zip
 unzip -qq AWS-ElasticBeanstalk-CLI-2.6.0.zip
+if [[ $? -ne "0" ]]; 
+then
+    fail "Unable to unzip file";
+fi 
 sudo mkdir -p /usr/local/aws/elasticbeanstalk
 sudo mv AWS-ElasticBeanstalk-CLI-2.6.0/* /usr/local/aws/elasticbeanstalk/
+
 export PATH="/usr/local/aws/elasticbeanstalk/eb/linux/python2.7:$PATH"
 export AWS_CREDENTIAL_FILE="/home/ubuntu/.elasticbeanstalk/aws_credential_file"
-export CURRENT_BRANCH=git rev-parse --abbrev-ref HEAD
-mkdir -p "/home/ubuntu/.elasticbeanstalk/"
-mkdir -p "$WERCKER_SOURCE_DIR/.elasticbeanstalk/"
-
+export CURRENT_BRANCH=master
+#git rev-parse --abbrev-ref HEAD
+if [[ $? -ne "0" ]];
+then
+    fail 'Unable to detect current branch'
+fi 
 if [ ! -n "$CURRENT_BRANCH" ]
 then
     fail 'Unable to detect current branch'
 fi
+
+mkdir -p "/home/ubuntu/.elasticbeanstalk/"
+mkdir -p "$WERCKER_SOURCE_DIR/.elasticbeanstalk/"
+if [[ $? -ne "0" ]];
+then
+    fail "Unable to make directory";
+fi 
+
+
 
 export AWS_CREDENTIAL_FILE="/home/ubuntu/.elasticbeanstalk/aws_credential_file"
 
@@ -57,14 +77,17 @@ EnvironmentName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME
 InstanceProfileName=aws-elasticbeanstalk-ec2-role
 EOT
 
-if [ ! eb status ]
+echo 'Checking if eb exists and can connect'
+eb status
+if [[ $? -ne "0" ]];
 then
 	fail 'EB is not working or is not set up correctly.'
 fi
 
 sudo bash /usr/local/aws/elasticbeanstalk/AWSDevTools/Linux/AWSDevTools-RepositorySetup.sh
 
-if [ ! git aws.push ]
+git aws.push
+if [[ $? -ne "0" ]];
 then
 	fail 'Unable to push to Amazon Elastic Beanstalk'	
 fi

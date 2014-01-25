@@ -50,8 +50,10 @@ cd $WERCKER_SOURCE_DIR
 export AWS_CREDENTIAL_FILE="$WERCKER_SOURCE_DIR/.elasticbeanstalk/aws_credential_file"
 
 echo '-----Setting up credentials'
-echo 'AWSAccessKeyId=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY' > $AWS_CREDENTIAL_FILE
-echo 'AWSSecretKey=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET_KEY' >> $AWS_CREDENTIAL_FILE
+cat <<EOT >> $AWS_CREDENTIAL_FILE
+AWSAccessKeyId=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY
+AWSSecretKey=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET_KEY
+EOT
 
 echo '-----Setting up config file'
 cat <<EOT >> $WERCKER_SOURCE_DIR/.elasticbeanstalk/config
@@ -77,8 +79,6 @@ fi
 cat $WERCKER_SOURCE_DIR/.elasticbeanstalk/config
 cat $AWS_CREDENTIAL_FILE
 
-pwd
-ls -la
 echo '-----Checking if eb exists and can connect'
 eb status
 if [[ $? -ne "0" ]];

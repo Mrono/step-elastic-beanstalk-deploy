@@ -5,12 +5,18 @@
 
 > Please note: This requires you to have an already existing Elastic Beanstalk application and environment in place, it will not run a startup procedure.
 
+* `key` (required) Credentials key provided by amazon.
+* `secret` (required) Credentials key secret provided by amazon
+* `app_name` (required) Name of the application.
+* `env_name` (required) Name of the application environment you wish to deploy to.
+
+
 ```yml
 deploy:
     steps:
         - mrono/elastic-beanstalk-deploy:
-            key: amazon key
-            secret_key: amazon secret key
-            app_name: EB application name
-            env_name: EB environment name
+            key: $AMAZON_KEY
+            secret: $AMAZON_SECRET_KEY
+            app_name: My Application
+            env_name: production
 ```

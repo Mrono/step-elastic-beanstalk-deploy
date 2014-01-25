@@ -4,19 +4,19 @@ set +e
 cd $HOME
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_APP_NAME" ]
 then
-    fail 'Missing or empty option AWS_APP_NAME, please check wercker.yml'
+    fail 'Missing or empty option APP_NAME, please check wercker.yml'
 fi
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME" ]
 then
-    fail 'Missing or empty option AWS_ENV_NAME, please check wercker.yml'
+    fail 'Missing or empty option ENV_NAME, please check wercker.yml'
 fi
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY" ]
 then
-    fail 'Missing or empty option AWS_KEY, please check wercker.yml'
+    fail 'Missing or empty option KEY, please check wercker.yml'
 fi
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET_KEY" ]
 then
-    fail 'Missing or empty option AWS_SECRET_KEY, please check wercker.yml'
+    fail 'Missing or empty option SECRET_KEY, please check wercker.yml'
 fi
 
 sudo apt-get update

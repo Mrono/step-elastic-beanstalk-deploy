@@ -24,7 +24,7 @@ fi
 
 if [ -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_DEBUG" ]
 then
-    warning "Debug mode turned on, this can dump potentially dangerous information to log files."
+    warn "Debug mode turned on, this can dump potentially dangerous information to log files."
 fi
 
 AWSEB_ROOT="$WERKER_CACHE_DIR/elasticbeanstalk"
@@ -36,7 +36,12 @@ else
     debug "Updating apt database."
     sudo apt-get update -qq
     debug "Installing unzip."
-    sudo apt-get install unzip
+    sudo apt-get install unzip -qq
+
+    if [ $? -ne "0" ]
+    then
+        fail "Unable to install dependencies.";
+    fi
 
     debug "Installing EB."
     wget --quiet https://s3.amazonaws.com/elasticbeanstalk/cli/AWS-ElasticBeanstalk-CLI-2.6.0.zip

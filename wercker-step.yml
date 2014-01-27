@@ -1,5 +1,5 @@
 name: elastic-beanstalk-deploy
-version: 0.1.0
+version: 0.1.01
 description: Allows you to deploy your application to an already existing amazon Elastic Beanstalk
 keywords:
   - amazon

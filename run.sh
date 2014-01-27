@@ -18,10 +18,8 @@ if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET" ]
 then
     fail 'Missing or empty option SECRET, please check wercker.yml'
 fi
-if [ -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_DEBUG" ]
-then
-    warning 'Debug mode turned on, this can dump potentionally dangerous information to log files.'
-fi
+
+warning 'Debug mode turned on, this can dump potentionally dangerous information to log files.'
 
 
 
@@ -61,11 +59,8 @@ AWSAccessKeyId=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY
 AWSSecretKey=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET
 EOT
 
-if [ -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_DEBUG" ]
-then
     echo '-----Debug'
     cat $AWS_CREDENTIAL_FILE
-fi
 
 
 echo '-----Setting up config file'
@@ -89,11 +84,8 @@ then
 	fail 'Unable to set up config file.'
 fi
 
-if [ -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_DEBUG" ]
-then
     echo '-----Debug'
     cat $WERCKER_SOURCE_DIR/.elasticbeanstalk/config
-fi
 
 
 echo '-----Checking if eb exists and can connect'

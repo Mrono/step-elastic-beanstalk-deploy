@@ -4,73 +4,86 @@ set +e
 cd $HOME
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_APP_NAME" ]
 then
-    fail 'Missing or empty option APP_NAME, please check wercker.yml'
+    fail "Missing or empty option APP_NAME, please check wercker.yml"
 fi
+
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME" ]
 then
-    fail 'Missing or empty option ENV_NAME, please check wercker.yml'
+    fail "Missing or empty option ENV_NAME, please check wercker.yml"
 fi
+
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY" ]
 then
-    fail 'Missing or empty option KEY, please check wercker.yml'
+    fail "Missing or empty option KEY, please check wercker.yml"
 fi
+
 if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET" ]
 then
-    fail 'Missing or empty option SECRET, please check wercker.yml'
+    fail "Missing or empty option SECRET, please check wercker.yml"
 fi
 
-warning 'Debug mode turned on, this can dump potentionally dangerous information to log files.'
-
-
-
-echo '-----Updating apt database'
-sudo apt-get update -qq
-echo '-----Installing unzip'
-sudo apt-get install unzip
-
-echo '-----Installing EB'
-wget --quiet https://s3.amazonaws.com/elasticbeanstalk/cli/AWS-ElasticBeanstalk-CLI-2.6.0.zip
-unzip -qq AWS-ElasticBeanstalk-CLI-2.6.0.zip
-if [[ $? -ne "0" ]]; 
+if [ -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_DEBUG" ]
 then
-    fail "Unable to unzip file";
-fi 
-sudo mkdir -p /usr/local/aws/elasticbeanstalk
-sudo mv AWS-ElasticBeanstalk-CLI-2.6.0/* /usr/local/aws/elasticbeanstalk/
+    warning "Debug mode turned on, this can dump potentially dangerous information to log files."
+fi
 
-export PATH="/usr/local/aws/elasticbeanstalk/eb/linux/python2.7:$PATH"
-export AWS_CREDENTIAL_FILE="/home/ubuntu/.elasticbeanstalk/aws_credential_file"
+AWSEB_ROOT="$WERKER_CACHE_DIR/elasticbeanstalk"
+
+if [ -f "$AWSEB_ROOT" ];
+then
+    debug "Found already existing EB file"
+else
+    debug "Updating apt database."
+    sudo apt-get update -qq
+    debug "Installing unzip."
+    sudo apt-get install unzip
+
+    debug "Installing EB."
+    wget --quiet https://s3.amazonaws.com/elasticbeanstalk/cli/AWS-ElasticBeanstalk-CLI-2.6.0.zip
+    unzip -qq AWS-ElasticBeanstalk-CLI-2.6.0.zip
+    if [ $? -ne "0" ]
+    then
+        fail "Unable to unzip file.";
+    fi 
+    sudo mkdir -p $AWSEB_ROOT
+    sudo mv AWS-ElasticBeanstalk-CLI-2.6.0/* $AWSEB_ROOT
+fi
+
+export PATH="$AWSEB_ROOT/eb/linux/python2.7:$PATH"
 
 mkdir -p "/home/ubuntu/.elasticbeanstalk/"
 mkdir -p "$WERCKER_SOURCE_DIR/.elasticbeanstalk/"
-if [[ $? -ne "0" ]];
+if [ $? -ne "0" ]
 then
-    fail "Unable to make directory";
-fi 
+    fail "Unable to make directory.";
+fi
 
-echo '-----Change back to the source dir';
+debug "Change back to the source dir.";
 cd $WERCKER_SOURCE_DIR
 
-export AWS_CREDENTIAL_FILE="$WERCKER_SOURCE_DIR/.elasticbeanstalk/aws_credential_file"
+AWSEB_CREDENTIAL_FILE="/home/ubuntu/.elasticbeanstalk/aws_credential_file"
+AWSEB_CONFIG_FILE="$WERCKER_SOURCE_DIR/.elasticbeanstalk/config"
 
-echo '-----Setting up credentials'
-cat <<EOT >> $AWS_CREDENTIAL_FILE
+debug "Setting up credentials."
+cat <<EOT >> $AWSEB_CREDENTIAL_FILE
 AWSAccessKeyId=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_KEY
 AWSSecretKey=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_SECRET
 EOT
 
-    echo '-----Debug'
-    cat $AWS_CREDENTIAL_FILE
+if [ -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_DEBUG" ]
+then
+    debug "Dumping Credential file."
+    cat $AWSEB_CREDENTIAL_FILE
+fi
 
-
-echo '-----Setting up config file'
-cat <<EOT >> $WERCKER_SOURCE_DIR/.elasticbeanstalk/config
+debug "Setting up config file."
+cat <<EOT >> $AWSEB_CONFIG_FILE
 [global]
 ApplicationName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_APP_NAME
 DevToolsEndpoint=git.elasticbeanstalk.us-west-2.amazonaws.com
 Region=us-west-2
 ServiceEndpoint=https://elasticbeanstalk.us-west-2.amazonaws.com
-AwsCredentialFile=$AWS_CREDENTIAL_FILE
+AwsCredentialFile=$AWSEB_CREDENTIAL_FILE
 EnvironmentName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME
 [branches]
 $WERCKER_GIT_BRANCH=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME
@@ -79,31 +92,35 @@ ApplicationVersionName=$WERCKER_GIT_BRANCH
 EnvironmentName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME
 InstanceProfileName=aws-elasticbeanstalk-ec2-role
 EOT
-if [[ $? -ne "0" ]];
+if [ $? -ne "0" ]
 then
-	fail 'Unable to set up config file.'
+    fail "Unable to set up config file."
 fi
 
-    echo '-----Debug'
-    cat $WERCKER_SOURCE_DIR/.elasticbeanstalk/config
+if [ -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_DEBUG" ]
+then
+    debug "Dumping config file."
+    cat $AWSEB_CONFIG_FILE
+fi
 
-
-echo '-----Checking if eb exists and can connect'
+debug "Checking if eb exists and can connect."
 eb status
-if [[ $? -ne "0" ]];
+if [ $? -ne "0" ]
 then
-	fail 'EB is not working or is not set up correctly.'
+    fail "EB is not working or is not set up correctly."
 fi
 
-sudo bash /usr/local/aws/elasticbeanstalk/AWSDevTools/Linux/AWSDevTools-RepositorySetup.sh
-if [[ $? -ne "0" ]];
+sudo bash $AWSEB_ROOT/AWSDevTools/Linux/AWSDevTools-RepositorySetup.sh
+if [ $? -ne "0" ]
 then
-	fail 'Unknown error with EB tools.'
+    fail "Unknown error with EB tools."
 fi
 
-echo '-----Pushing to AWS eb servers'
+debug "Pushing to AWS eb servers."
 git aws.push
-if [[ $? -ne "0" ]];
+if [ $? -ne "0" ]
 then
-	fail 'Unable to push to Amazon Elastic Beanstalk'	
+    fail "Unable to push to Amazon Elastic Beanstalk"   
 fi
+
+success 'Successfully pushed to Amazon Elastic Beanstalk'

@@ -22,37 +22,18 @@ then
     fail "Missing or empty option SECRET, please check wercker.yml"
 fi
 
+if [ ! -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_REGION" ]
+then
+    warn "Missing or empty option REGION, defaulting to us-west-2"
+    WERCKER_ELASTIC_BEANSTALK_DEPLOY_REGION="us-west-2"
+fi
+
 if [ -n "$WERCKER_ELASTIC_BEANSTALK_DEPLOY_DEBUG" ]
 then
     warn "Debug mode turned on, this can dump potentially dangerous information to log files."
 fi
 
-AWSEB_ROOT="$WERKER_CACHE_DIR/elasticbeanstalk"
-
-if [ -f "$AWSEB_ROOT" ];
-then
-    debug "Found already existing EB file"
-else
-    debug "Updating apt database."
-    sudo apt-get update -qq
-    debug "Installing unzip."
-    sudo apt-get install unzip -qq
-
-    if [ $? -ne "0" ]
-    then
-        fail "Unable to install dependencies.";
-    fi
-
-    debug "Installing EB."
-    wget --quiet https://s3.amazonaws.com/elasticbeanstalk/cli/AWS-ElasticBeanstalk-CLI-2.6.0.zip
-    unzip -qq AWS-ElasticBeanstalk-CLI-2.6.0.zip
-    if [ $? -ne "0" ]
-    then
-        fail "Unable to unzip file.";
-    fi 
-    sudo mkdir -p $AWSEB_ROOT
-    sudo mv AWS-ElasticBeanstalk-CLI-2.6.0/* $AWSEB_ROOT
-fi
+AWSEB_ROOT="$WERKER_STEP_DIR/eb-tools"
 
 export PATH="$AWSEB_ROOT/eb/linux/python2.7:$PATH"
 
@@ -68,6 +49,8 @@ cd $WERCKER_SOURCE_DIR
 
 AWSEB_CREDENTIAL_FILE="/home/ubuntu/.elasticbeanstalk/aws_credential_file"
 AWSEB_CONFIG_FILE="$WERCKER_SOURCE_DIR/.elasticbeanstalk/config"
+AWSEB_DEVTOOLS_ENDPOINT="git.elasticbeanstalk.$WERCKER_STEP_EBS_DEPLOY_REGION.amazonaws.com"
+AWSEB_SERVICE_ENDPOINT="https://elasticbeanstalk.$WERCKER_STEP_EBS_DEPLOY_REGION.amazonaws.com"
 
 debug "Setting up credentials."
 cat <<EOT >> $AWSEB_CREDENTIAL_FILE
@@ -85,9 +68,9 @@ debug "Setting up config file."
 cat <<EOT >> $AWSEB_CONFIG_FILE
 [global]
 ApplicationName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_APP_NAME
-DevToolsEndpoint=git.elasticbeanstalk.us-west-2.amazonaws.com
-Region=us-west-2
-ServiceEndpoint=https://elasticbeanstalk.us-west-2.amazonaws.com
+DevToolsEndpoint=$AWSEB_DEVTOOLS_ENDPOINT
+Region=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_REGION
+ServiceEndpoint=$AWSEB_SERVICE_ENDPOINT
 AwsCredentialFile=$AWSEB_CREDENTIAL_FILE
 EnvironmentName=$WERCKER_ELASTIC_BEANSTALK_DEPLOY_ENV_NAME
 [branches]

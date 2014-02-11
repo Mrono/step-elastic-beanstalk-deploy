@@ -1,0 +1,102 @@
+#!/usr/bin/env ruby
+#-*-ruby-*-
+
+# Copyright 2012 Amazon.com, Inc. or its affiliates. All Rights
+# Reserved.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"). You
+# may not use this file except in compliance with the License. A copy
+# of the License is located at
+#
+#   http://aws.amazon.com/apache2.0/
+#
+# or in the "license" file accompanying this file. This file is
+# distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+# ANY KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations under the
+# License.
+
+$: << File.dirname(__FILE__)
+require 'optparse'
+require 'openssl'
+require 'aws/dev_tools'
+
+
+
+USAGE = <<USAGE
+Usage: git aws.push
+
+Options:
+   --environment ENVIRONMENT, -e ENVIRONMENT
+       ENVIRONMENT is the name of an AWS Elastic Beanstalk environment.  When this
+       option is used, the command updates the named environment instead of
+       the default one.  The default can be set by editing .elasticbeanstalk/config in
+       the root of your repository or by running "git aws.config".
+
+   --commit COMMIT, -c COMMIT
+       COMMIT identifies a commit in the repository -- for example, "HEAD" identifies
+       the commit that is currently checked out, or a SHA1 (possibly abbreviated) can
+       be used to identify a specific commit from the history.  When this option is used,
+       the command uses the named commit instead of HEAD to create the version to be
+       deployed to your environment.  See the help for "git rev-parse" for a description
+       of all the supported formats for identifying commits.
+
+USAGE
+
+if __FILE__ == $0
+  opts = {}
+
+  begin
+    OptionParser.new do |opt|
+      opt.banner = USAGE
+
+      opt.on("-e", "--environment ENVIRONMENT") do |env|
+        opts[:env] = env
+      end
+
+      opt.on("-c", "--commit COMMIT") do |commit|
+        unless AWS::DevTools.commit_exists?(commit)
+          # git has already put an error message on stderr
+          exit 1
+        end
+
+        unless "commit" == (type = AWS::DevTools.git_object_type(commit))
+          $stderr.puts "#{commit} is a #{type}, and the value of --commit must refer to a commit"
+          exit 1
+        end
+
+        opts[:commit] = AWS::DevTools.commit_id(commit)
+      end
+
+      opt.on("--remote-url") do
+        opts[:remote_url] = true
+      end
+
+      opt.on("-h", "--help") do
+        puts opt.banner
+        exit 0
+      end
+
+    end.parse!
+  rescue OptionParser::MissingArgument => e
+    $stderr.puts e
+    exit 1
+  end
+
+  remote = AWS::DevTools.signed_uri(opts[:env], opts[:commit])
+  if opts[:remote_url]
+    $stdout.write(remote)
+    exit 0
+  else
+    commit = opts[:commit]
+    commit = 'HEAD' if commit.nil?
+    
+    destined_env = opts[:env] || AWS::DevTools.environment()
+    if !destined_env.nil?
+      puts "Pushing to environment: #{destined_env}"
+    end
+    `git push -f #{remote} #{commit}:refs/heads/master`
+    status = $?.exitstatus
+    exit status
+  end
+end

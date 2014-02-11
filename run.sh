@@ -35,6 +35,9 @@ fi
 
 AWSEB_ROOT="$WERKER_STEP_DIR/eb-tools"
 
+echo $AWSEB_ROOT
+$AWSEB_ROOT/eb/linux/python2.7/eb status
+
 export PATH="$AWSEB_ROOT/eb/linux/python2.7:$PATH"
 
 echo $PATH

@@ -48,8 +48,8 @@ cd $WERCKER_SOURCE_DIR
 
 AWSEB_CREDENTIAL_FILE="/home/ubuntu/.elasticbeanstalk/aws_credential_file"
 AWSEB_CONFIG_FILE="$WERCKER_SOURCE_DIR/.elasticbeanstalk/config"
-AWSEB_DEVTOOLS_ENDPOINT="git.elasticbeanstalk.$WERCKER_STEP_EBS_DEPLOY_REGION.amazonaws.com"
-AWSEB_SERVICE_ENDPOINT="https://elasticbeanstalk.$WERCKER_STEP_EBS_DEPLOY_REGION.amazonaws.com"
+AWSEB_DEVTOOLS_ENDPOINT="git.elasticbeanstalk.$WERCKER_ELASTIC_BEANSTALK_DEPLOY_REGION.amazonaws.com"
+AWSEB_SERVICE_ENDPOINT="https://elasticbeanstalk.$WERCKER_ELASTIC_BEANSTALK_DEPLOY_REGION.amazonaws.com"
 
 debug "Setting up credentials."
 cat <<EOT >> $AWSEB_CREDENTIAL_FILE

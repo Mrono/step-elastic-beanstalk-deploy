@@ -34,12 +34,7 @@ then
 fi
 
 AWSEB_ROOT="$WERCKER_STEP_ROOT/eb-tools"
-
-$AWSEB_ROOT/eb/linux/python2.7/eb status
-
-export PATH="$AWSEB_ROOT/eb/linux/python2.7:$PATH"
-
-echo $PATH
+AWSEB_TOOL="$AWSEB_ROOT/eb/linux/python2.7/eb"
 
 mkdir -p "/home/ubuntu/.elasticbeanstalk/"
 mkdir -p "$WERCKER_SOURCE_DIR/.elasticbeanstalk/"
@@ -96,7 +91,7 @@ then
 fi
 
 debug "Checking if eb exists and can connect."
-eb status
+$AWSEB_TOOL status
 if [ $? -ne "0" ]
 then
     fail "EB is not working or is not set up correctly."

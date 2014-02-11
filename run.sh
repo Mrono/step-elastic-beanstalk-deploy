@@ -37,6 +37,8 @@ AWSEB_ROOT="$WERKER_STEP_DIR/eb-tools"
 
 export PATH="$AWSEB_ROOT/eb/linux/python2.7:$PATH"
 
+echo $PATH
+
 mkdir -p "/home/ubuntu/.elasticbeanstalk/"
 mkdir -p "$WERCKER_SOURCE_DIR/.elasticbeanstalk/"
 if [ $? -ne "0" ]
